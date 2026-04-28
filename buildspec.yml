@@ -1,0 +1,25 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to ECR
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 624577704118.dkr.ecr.us-east-1.amazonaws.com
+
+  build:
+    commands:
+      - echo Build Docker image
+      - docker build -t simple-docker-service .
+      - docker tag simple-docker-service:latest 624577704118.dkr.ecr.us-east-1.amazonaws.com/simple-docker-service:latest
+
+  post_build:
+    commands:
+      - echo Push image
+      - docker push 624577704118.dkr.ecr.us-east-1.amazonaws.com/simple-docker-service:latest
+
+      - echo Create imagedefinitions.json
+      - printf '[{"name":"App","imageUri":"624577704118.dkr.ecr.us-east-1.amazonaws.com/simple-docker-service-0affe0af1907@sha256:725a658d4e6348a948b33af7956f18dcebbb5e1c66095d7e16a348ebc1ac3ed5"}]' > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
